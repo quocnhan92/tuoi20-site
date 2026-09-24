@@ -31,11 +31,24 @@
       const code = params.get('code');
       if (!code) throw new Error('Phản hồi thiếu mã ủy quyền.');
       document.getElementById('heading').textContent = 'Đã nhận mã từ TikTok';
-      status.textContent = 'Tải file rồi chạy lệnh finish trên máy để đổi mã lấy token. Kết nối chỉ hoàn tất khi bước đó thành công.';
+      status.textContent = 'Sao chép mã rồi chạy lệnh finish-paste trên máy để đổi mã lấy token. Kết nối chỉ hoàn tất khi bước đó thành công.';
+      const response = JSON.stringify({code, state: pending.state});
+      const copy = document.getElementById('copy');
+      copy.hidden = false;
+      copy.addEventListener('click', async () => {
+        const copyStatus = document.getElementById('copy-status');
+        copyStatus.hidden = false;
+        try {
+          await navigator.clipboard.writeText(response);
+          copyStatus.textContent = 'Đã sao chép. Dán vào lời nhắc ẩn của lệnh finish-paste trong Terminal.';
+        } catch (_) {
+          copyStatus.textContent = 'Trình duyệt chặn clipboard. Hãy dùng nút tải file hoặc trình duyệt khác.';
+        }
+      });
       const button = document.getElementById('download');
       button.hidden = false;
       button.addEventListener('click', () => {
-        const url = URL.createObjectURL(new Blob([JSON.stringify({code, state: pending.state})], {type:'application/json'}));
+        const url = URL.createObjectURL(new Blob([response], {type:'application/json'}));
         const a = document.createElement('a'); a.href = url; a.download = 'tuoi20-oauth-response.json'; a.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       });
